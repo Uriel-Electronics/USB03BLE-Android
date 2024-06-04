@@ -3,6 +3,8 @@ package com.uriel.usb_03_ble.views
 import android.Manifest
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothGatt
+import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothManager
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
@@ -65,6 +67,8 @@ fun HomeView(modifier: Modifier, location: Location?, address: Address?) {
     var currentTime by remember { mutableStateOf(getCurrentTime()) }
     val viewState: MutableState<ViewState> = remember { mutableStateOf(ViewState.HOME) }
     val foundDevice: MutableState<BluetoothDevice?> = remember { mutableStateOf(null) }
+    val characteristic: MutableState<BluetoothGattCharacteristic?> = remember { mutableStateOf(null) }
+    val gatt: MutableState<BluetoothGatt?> = remember { mutableStateOf(null) }
 
     LaunchedEffect(Unit) {
         while (true) {
@@ -253,7 +257,7 @@ fun HomeView(modifier: Modifier, location: Location?, address: Address?) {
     } else if (viewState.value == ViewState.FIND_DEVICE) {
         FindDevice(viewState = viewState, foundDevice = foundDevice)
     } else if (viewState.value == ViewState.DEVICE_VIEW) {
-        DeviceView(device = foundDevice, viewState)
+        DeviceView(device = foundDevice, viewState, gatt, characteristic)
     } else if (viewState.value == ViewState.DEVICE_CONNECTED) {
         Box(modifier = Modifier
             .fillMaxSize()
@@ -391,10 +395,6 @@ fun HomeView(modifier: Modifier, location: Location?, address: Address?) {
                     }
                 }
 
-                TimerView(modifier = Modifier
-                    .padding(horizontal = 20.dp)
-                    .padding(top = 12.dp))
-
                 ModeView(modifier = Modifier
                     .padding(horizontal = 20.dp)
                     .padding(top = 12.dp))
@@ -404,6 +404,13 @@ fun HomeView(modifier: Modifier, location: Location?, address: Address?) {
                         .padding(horizontal = 20.dp)
                         .padding(top = 12.dp)
                 )
+
+                TimerView(modifier = Modifier
+                    .padding(horizontal = 20.dp)
+                    .padding(top = 12.dp),
+                    gatt,
+                    characteristic
+                    )
             }
         }
     }

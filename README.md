@@ -1,1 +1,0 @@
-# USB03BLE-Android

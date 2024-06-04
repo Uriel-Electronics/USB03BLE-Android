@@ -1,5 +1,6 @@
 package com.uriel.usb_03_ble.views
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,11 +20,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.uriel.usb_03_ble.R
 import com.uriel.usb_03_ble.ui.theme.Pretendard
 import com.uriel.usb_03_ble.ui.theme.UrielDarkGray
 import com.uriel.usb_03_ble.ui.theme.UrielTextDark
@@ -48,6 +51,10 @@ fun DaySelectView(modifier: Modifier) {
                 ),
                 modifier = Modifier.alpha(0.4F)
             )
+
+            Image(painter = painterResource(id = R.drawable.white_arrow),
+                contentDescription = "logo",
+                modifier = Modifier)
         }
 
         Row(modifier = Modifier.padding(top = 10.dp)) {

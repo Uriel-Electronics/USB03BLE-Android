@@ -48,9 +48,11 @@ import java.util.UUID
 
 @SuppressLint("MissingPermission")
 @Composable
-fun DeviceView(device: MutableState<BluetoothDevice?>, viewState: MutableState<ViewState>) {
+fun DeviceView(device: MutableState<BluetoothDevice?>,
+               viewState: MutableState<ViewState>,
+               selectedGatt: MutableState<BluetoothGatt?>,
+               selectedCharacteristic: MutableState<BluetoothGattCharacteristic?>) {
     val context = LocalContext.current
-    val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
 
     fun connectToDevice(device: BluetoothDevice) {
 
@@ -81,6 +83,9 @@ fun DeviceView(device: MutableState<BluetoothDevice?>, viewState: MutableState<V
                                     delay(1200)
 
                                     requestData(gatt, characteristic)
+                                    selectedGatt.value = gatt
+                                    selectedCharacteristic.value = characteristic
+
                                     viewState.value = ViewState.DEVICE_CONNECTED
                                 }
                                 // Check if characteristic is writable
@@ -247,7 +252,7 @@ fun getFormattedLNG(): Int {
 
 @OptIn(ExperimentalUnsignedTypes::class)
 @SuppressLint("MissingPermission")
-private fun sendPacket(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, packet: UByteArray) {
+fun sendPacket(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, packet: UByteArray) {
     Log.d("BLETEST", "PACKET SENDING STARTED")
 
     characteristic.value = packet.toByteArray()
