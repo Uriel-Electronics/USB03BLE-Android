@@ -67,8 +67,10 @@ fun FindDevice(viewState: MutableState<ViewState>, foundDevice: MutableState<Blu
     val bluetoothAdapter = bluetoothManager.adapter
     val bluetoothLeScanner = bluetoothAdapter.bluetoothLeScanner
 
+    var scannedDevices: ArrayList<String> = arrayListOf()
+
     val scanSettings = ScanSettings.Builder()
-        .setScanMode(ScanSettings.SCAN_MODE_LOW_POWER)
+        .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
         .build()
 
     val scanCallback: ScanCallback = object : ScanCallback() {
@@ -82,13 +84,21 @@ fun FindDevice(viewState: MutableState<ViewState>, foundDevice: MutableState<Blu
                 return
             }
 
+            if (scannedDevices.contains(result.device.toString())) {
+                return
+            }
+
             if (result.device.name != null) {
+                Log.d("BLETEST", result.device.name)
+
                 val codes = result.device.toString()
 
                 val uuids = codes.split(":")
                 if (uuids[0] == "94" && uuids[1] == "C9") {
 
                     foundDevice.value = result.device
+                } else {
+                    scannedDevices.add(result.device.toString())
                 }
             }
         }
