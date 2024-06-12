@@ -91,8 +91,8 @@ fun FindDevice(viewState: MutableState<ViewState>, foundDevice: MutableState<Blu
             if (result.device.name != null) {
                 Log.d("BLETEST", result.device.name)
 
-                val codes = result.device.toString()
-
+                val codes = result.device.address
+                Log.d("BLETEST", codes)
                 val uuids = codes.split(":")
                 if (uuids[0] == "94" && uuids[1] == "C9") {
 
