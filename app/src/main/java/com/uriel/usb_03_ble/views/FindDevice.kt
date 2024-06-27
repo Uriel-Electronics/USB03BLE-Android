@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -38,6 +39,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -60,7 +62,10 @@ import com.uriel.usb_03_ble.ui.theme.UrielTextDark
 import com.uriel.usb_03_ble.ui.theme.UrielTextLight
 
 @Composable
-fun FindDevice(viewState: MutableState<ViewState>, foundDevice: MutableState<BluetoothDevice?>) {
+fun FindDevice(viewState: MutableState<ViewState>,
+               foundDevices: SnapshotStateList<BluetoothDevice>,
+               finalDevice: MutableState<BluetoothDevice?>
+               ) {
 
     val context = LocalContext.current
     val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
@@ -96,7 +101,7 @@ fun FindDevice(viewState: MutableState<ViewState>, foundDevice: MutableState<Blu
                 val uuids = codes.split(":")
                 if (uuids[0] == "94" && uuids[1] == "C9") {
 
-                    foundDevice.value = result.device
+                    foundDevices.add(result.device)
                 } else {
                     scannedDevices.add(result.device.toString())
                 }
@@ -162,7 +167,7 @@ fun FindDevice(viewState: MutableState<ViewState>, foundDevice: MutableState<Blu
                 )
             }
 
-            if (foundDevice.value == null) {
+            if (foundDevices.isEmpty()) {
                 Box(modifier = Modifier
                     .padding(20.dp)
                     .fillMaxHeight()
@@ -198,7 +203,7 @@ fun FindDevice(viewState: MutableState<ViewState>, foundDevice: MutableState<Blu
                         )
                     }
                 }
-            }  else {
+            } else {
                 Box(modifier = Modifier
                     .padding(20.dp)
                     .fillMaxWidth()
@@ -218,67 +223,37 @@ fun FindDevice(viewState: MutableState<ViewState>, foundDevice: MutableState<Blu
                             modifier = Modifier.padding(top = 40.dp),
                         )
 
-                        Box {
-                            Box(modifier = Modifier.background(
-                                brush = Brush.verticalGradient(
-                                    listOf(
-                                        Color.Transparent,
-                                        Color(0xFF373A3F),
-                                        Color.Red
+                        LazyColumn {
+                            items(foundDevices.size) { i ->
+                                Box(modifier = Modifier
+                                    .padding(top = 20.dp)
+                                    .fillMaxWidth()
+                                    .padding(all = 20.dp)
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(UrielTextLight)
+                                    .clickable {
+                                        finalDevice.value = foundDevices[i]
+
+                                        finalDevice.value?.let { device ->
+                                            bluetoothAdapter
+                                                .getRemoteDevice(device.address)
+                                                .connectGatt(context, false, gattCallback)
+                                        }
+                                    }
+                                ) {
+                                    Text(text = "${foundDevices[i].name}",
+                                        style = TextStyle(
+                                            fontFamily = Pretendard,
+                                            fontWeight = FontWeight.SemiBold,
+                                            fontSize = 15.sp,
+                                            color = UrielTextDark
+                                        ),
+                                        modifier = Modifier
+                                            .align(Alignment.Center)
+                                            .padding(vertical = 12.5.dp)
                                     )
-                                )
-                            ))
-
-                            Image(painter = painterResource(id = R.drawable.found_device),
-                                contentDescription = "logo",
-                                modifier = Modifier.padding(20.dp))
-
-                            Box(modifier = Modifier.background(
-                                brush = Brush.verticalGradient(
-                                    listOf(
-                                        Color.Transparent,
-                                        Color(0xFF373A3F),
-                                        Color.Red
-                                    )
-                                )
-                            ))
-                        }
-
-                        Text(text = "${foundDevice.value!!.name ?: "test"}",
-                            style = TextStyle(
-                                fontFamily = Pretendard,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 20.sp,
-                                color = UrielTextLight
-                            ),
-                            modifier = Modifier.padding(vertical = 20.dp),
-                        )
-
-                        Box(modifier = Modifier
-                            .padding(top = 20.dp)
-                            .fillMaxWidth()
-                            .padding(all = 20.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(UrielTextLight)
-                            .clickable {
-                                foundDevice.value?.let { device ->
-                                    bluetoothAdapter
-                                        .getRemoteDevice(device.address)
-                                        .connectGatt(context, false, gattCallback)
                                 }
                             }
-                        ) {
-                            Text(text = "연결하기",
-                                style = TextStyle(
-                                    fontFamily = Pretendard,
-                                    fontWeight = FontWeight.SemiBold,
-                                    fontSize = 15.sp,
-                                    color = UrielTextDark
-                                ),
-                                modifier = Modifier
-                                    .align(Alignment.Center)
-                                    .padding(vertical = 12.5.dp)
-                            )
                         }
                     }
                 }

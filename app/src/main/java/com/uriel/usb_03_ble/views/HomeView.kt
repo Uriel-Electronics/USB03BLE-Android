@@ -31,6 +31,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -66,7 +67,8 @@ fun HomeView(modifier: Modifier, location: Location?, address: Address?) {
 
     var currentTime by remember { mutableStateOf(getCurrentTime()) }
     val viewState: MutableState<ViewState> = remember { mutableStateOf(ViewState.HOME) }
-    val foundDevice: MutableState<BluetoothDevice?> = remember { mutableStateOf(null) }
+    val foundDevices = remember { mutableStateListOf<BluetoothDevice>() }
+    val finalDevice: MutableState<BluetoothDevice?> = remember { mutableStateOf(null) }
     val characteristic: MutableState<BluetoothGattCharacteristic?> = remember { mutableStateOf(null) }
     val gatt: MutableState<BluetoothGatt?> = remember { mutableStateOf(null) }
 
@@ -255,9 +257,9 @@ fun HomeView(modifier: Modifier, location: Location?, address: Address?) {
             }
         }
     } else if (viewState.value == ViewState.FIND_DEVICE) {
-        FindDevice(viewState = viewState, foundDevice = foundDevice)
+        FindDevice(viewState = viewState, foundDevices = foundDevices, finalDevice = finalDevice)
     } else if (viewState.value == ViewState.DEVICE_VIEW) {
-        DeviceView(device = foundDevice, viewState, gatt, characteristic)
+        DeviceView(device = finalDevice, viewState, gatt, characteristic)
     } else if (viewState.value == ViewState.DEVICE_CONNECTED) {
         Box(modifier = Modifier
             .fillMaxSize()
@@ -266,7 +268,7 @@ fun HomeView(modifier: Modifier, location: Location?, address: Address?) {
                 .fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally) {
 
-                Text(text = if (foundDevice == null) "Uriel" else foundDevice.value!!.name,
+                Text(text = if (foundDevices.isEmpty()) "Uriel" else finalDevice.value!!.name,
                     style = TextStyle(
                         fontFamily = Pretendard,
                         fontWeight = FontWeight.SemiBold,
